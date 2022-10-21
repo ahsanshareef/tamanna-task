@@ -1,5 +1,6 @@
 package com.tamanna.demo.controller;
 
+import com.tamanna.demo.enums.Role;
 import com.tamanna.demo.model.Timeslots;
 import com.tamanna.demo.model.User;
 import com.tamanna.demo.request.InterviewerRequest;
@@ -22,27 +23,30 @@ public class InterviewController {
     @Autowired
     ITimeSlotService timeSlotService;
 
-    @GetMapping(value = "tamannam/schedual")
-    @ResponseBody
-    public Object getUserSchedual(@RequestParam(value = "userId", required = false) String userId){
-        return userId;
-    }
-
     @PostMapping(value = "tamannam/schedual")
     @ResponseBody
-    public Object addUserSchedual(@RequestBody InterviewerRequest request) throws ValidationException{
+    public Object addUserSchedual(@RequestBody InterviewerRequest request){
 
         User user = userService.get(request.getId());
         if(user.getRole().equals(request.getRole())){
-            List<Timeslots> timeslots = Util.prepareTimeSlotList(request.getAvailability(), user);
-            List<Timeslots> savedTimeslots = timeSlotService.addAll(timeslots);
-            if(savedTimeslots.size() == timeslots.size()){
-                return new Response<Object>(200L, "Time slots saved successfully", null);
-            } else{
-                return new Response<Object>(500L, "Time slots are not saved", null);
+            List<Timeslots> timeslots = null;
+            try {
+                timeslots = Util.prepareTimeSlotList(request.getAvailability(), user);
+                if(request.getRole().equals(Role.CANDIDATE)){
+                    return null;
+                } else {
+                    List<Timeslots> savedTimeslots = timeSlotService.addInterviewerTimeSlots(timeslots);
+                    if(savedTimeslots.size() == timeslots.size()){
+                        return new Response<Object>(200L, "Time slots saved successfully", savedTimeslots);
+                    } else{
+                        return new Response<>(500L, "Time slots are not saved", null);
+                    }
+                }
+            } catch (ValidationException e) {
+                return new Response<>(500L, e.getMessage(), null);
             }
         } else {
-            throw new ValidationException("User is not valid for this operation");
+            return new Response<>(500L, "User is not valid for this operation", null);
         }
     }
 }

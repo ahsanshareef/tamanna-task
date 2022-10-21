@@ -1,5 +1,7 @@
 package com.tamanna.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tamanna.demo.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
@@ -15,9 +18,11 @@ import java.util.List;
 @NoArgsConstructor
 @Entity(name = "user")
 @Table(name = "user", schema = "testdb")
-public class User {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class User implements Serializable {
 
-    @Column(name = "userId")
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long userId;
@@ -31,6 +36,7 @@ public class User {
     @Enumerated(EnumType.ORDINAL)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
-    private List<Timeslots> timeslots;
+//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name="user_Id")
+//    private List<Timeslots> timeslots;
 }

@@ -5,5 +5,7 @@ import com.tamanna.demo.model.Timeslots;
 import java.util.List;
 
 public interface ITimeSlotService {
-    List<Timeslots> addAll(List<Timeslots> timeslots);
+    List<Timeslots> addInterviewerTimeSlots(List<Timeslots> timeslots);
+
+    List<Timeslots> addCandidateTimeSlots(List<Timeslots> timeslots);
 }

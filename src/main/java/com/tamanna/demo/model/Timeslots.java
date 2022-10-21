@@ -1,11 +1,14 @@
 package com.tamanna.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalTime;
@@ -16,11 +19,12 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Entity(name = "timeslots")
 @Table(name = "timeslots", schema = "testdb")
-public class Timeslots {
+public class Timeslots implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
     @Column(name = "date")
@@ -32,7 +36,7 @@ public class Timeslots {
     @Column(name = "end_date_time")
     private LocalTime endDateTime;
 
-    @ManyToOne
-    @JoinColumn(name="userId", nullable=false)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id")
     private User user;
 }
