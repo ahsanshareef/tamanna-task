@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Time;
 import java.time.LocalTime;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Getter

@@ -1,13 +1,13 @@
 package com.tamanna.demo.service.impl;
 
-import com.sun.xml.bind.v2.runtime.reflect.ListTransducedAccessorImpl;
 import com.tamanna.demo.model.Timeslots;
 import com.tamanna.demo.repository.TimeSlotRepository;
+import com.tamanna.demo.response.TimeSlotsForCandidateResponse;
 import com.tamanna.demo.service.ITimeSlotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,23 +18,40 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     TimeSlotRepository timeSlotRepository;
 
     @Override
-    public List<Timeslots> addInterviewerTimeSlots(List<Timeslots> timeslots) {
+    public List<Timeslots> addAll(List<Timeslots> timeslots) {
         return timeSlotRepository.saveAll(timeslots);
     }
 
     @Override
-    public List<Timeslots> addCandidateTimeSlots(List<Timeslots> timeslots) {
-        List<Timeslots> savedTimeslots = timeSlotRepository.saveAll(timeslots);
-        List<Timeslots> availableSlotsForCadidate = new ArrayList<>();
-        if(savedTimeslots.size() == timeslots.size()){
-            List<Date> dates = new ArrayList<>();
-            timeslots.stream().forEach(obj -> {
-                dates.add(obj.getDate());
-            });
-            availableSlotsForCadidate = timeSlotRepository.getAvailableSlotsForCadidate(dates);
+    public List<TimeSlotsForCandidateResponse> getAvailableTimeSlotsForCandiDate(Long candidateId, Date startDate, Date endDate) {
 
+        List<Timeslots> candidateTimeslots = timeSlotRepository.getTimeslotsByUser(candidateId);
+        List<Timeslots> availableSlotsForCadidate = timeSlotRepository.getAvailableSlotsForCadidate(startDate, endDate, candidateId);
+        List<TimeSlotsForCandidateResponse> result = new ArrayList<>();
+        Boolean flag = Boolean.FALSE;
+        for(Timeslots interviewer : availableSlotsForCadidate){
+            for(Timeslots candidate : candidateTimeslots){
+                if(interviewer.getStartDateTime().equals(candidate.getStartDateTime()) && (Math.abs(interviewer.getStartDateTime().getHour() - candidate.getEndDateTime().getHour()) >= 1)){
+                    flag = Boolean.TRUE;
+                } else if(interviewer.getStartDateTime().isAfter(candidate.getStartDateTime()) && interviewer.getStartDateTime().isBefore(candidate.getEndDateTime())
+                        && (Math.abs(interviewer.getStartDateTime().getHour() - candidate.getEndDateTime().getHour()) >= 1)){
+                    flag = Boolean.TRUE;
+                } else if(candidate.getStartDateTime().isAfter(interviewer.getStartDateTime()) && candidate.getStartDateTime().isBefore(interviewer.getEndDateTime())
+                        && (Math.abs(candidate.getStartDateTime().getHour() - interviewer.getEndDateTime().getHour()) >= 1)){
+                    flag = Boolean.TRUE;
+                }
+
+                if(Boolean.TRUE == flag){
+                    TimeSlotsForCandidateResponse object = new TimeSlotsForCandidateResponse(interviewer.getUser().getFirstName() + " " + interviewer.getUser().getLastName(),
+                            interviewer.getDate().toString(),interviewer.getStartDateTime() + " - " + interviewer.getStartDateTime().plusHours(1L));
+                    if(!result.contains(object)){
+                        result.add(object);
+                    }
+
+                }
+            }
         }
-        return availableSlotsForCadidate;
+        return result;
     }
 
 }

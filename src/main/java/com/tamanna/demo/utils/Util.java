@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Util {
 
-    public static Boolean validateTime(LocalTime startTime, LocalTime endTime){
+    private static Boolean validateTime(LocalTime startTime, LocalTime endTime){
         if(startTime.getMinute() > 0 || endTime.getMinute() > 0){
             return Boolean.FALSE;
         } else {
